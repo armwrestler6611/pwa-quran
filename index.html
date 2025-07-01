@@ -458,8 +458,8 @@
 
         // Поворачиваем список влево на (selectedNumber - 1) позиций
         for (let i = 0; i < selectedNumber - 1; i++) {
-            const first = rotatedList.shift();
-            rotatedList.push(first);
+            const last = rotatedList.pop();
+            rotatedList.unshift(last);
         }
 
         return rotatedList;
