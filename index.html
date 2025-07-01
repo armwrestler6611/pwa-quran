@@ -1,110 +1,609 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Генератор чтения Корана</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Генератор списков чтения Корана</title>
 
-    <!-- PWA: Manifest и цвет темы -->
-    <link rel="manifest" href="manifest.json" />
-    <meta name="theme-color" content="#1e40af" />
-    <link rel="apple-touch-icon" href="icons/icon-192.png" />
+    <!-- PWA meta tags -->
+    <meta name="theme-color" content="#1e40af">
+    <meta name="description" content="Генератор ротированных списков для чтения Корана с отправкой в WhatsApp">
+    <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoi0JPQtdC90LXRgNCw0YLQvtGAINGB0L/QuNGB0LrQvtCyINGH0YLQtdC90LjRjyDQmtC+0YDQsNC90LAiLCJzaG9ydF9uYW1lIjoi0JrQvtGA0LDQvSDQodC/0LjRgdC+0LoiLCJzdGFydF91cmwiOiIvIiwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJiYWNrZ3JvdW5kX2NvbG9yIjoiIzFmMjkzNyIsInRoZW1lX2NvbG9yIjoiIzFlNDBhZiIsImljb25zIjpbeyJzcmMiOiJkYXRhOmltYWdlL3N2Zyt4bWw7YmFzZTY0LFBITjJaeUI0Yld4dWN6MGlhSFIwY0RvdkwzZDNkeTUzTXk1dmNtY3ZNakF3TUM5emRtY2lJSGRwWkhSb1BTSXlOREFpSUdobGFXZG9kRDBpTWpRd0lqNGdQR05wY21Oc1pTQmplRDBpTVRJd0lpQmplVDBpTVRJd0lpQnlQU0k1TUNJZ1ptbHNiRDBpSXpGbE5EQmhaQ0krUEM5amFYSmpiR1UrSUR4MFpYaDBJSGc5SWpFeU1DSWdlVDBpTVRNMElpQm1hV3hzUFNJaVptWm1JaUJtYjI1MExYTnBlbVU5SWpFMElpQjBaWGgwTFdGdVkyaHZjajBpYldsa1pHeGxJajVMYjNKaGJpQlNaV0ZrYVc1blBDOTBaWGgwUGc9PSIsInNpemVzIjoiMjQweDI0MCIsInR5cGUiOiJpbWFnZS9zdmcreG1sIn1dfQ==">
 
-    <!-- Tailwind CSS (CDN) -->
-    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e40af 0%, #3b82f6 50%, #60a5fa 100%);
+            min-height: 100vh;
+            color: #fff;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px 0;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            background: linear-gradient(45deg, #fbbf24, #f59e0b);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .form-container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #fbbf24;
+            background: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.3);
+        }
+
+        .form-control::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .number-selector {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(60px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .number-btn {
+            padding: 12px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .number-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .number-btn.selected {
+            background: #fbbf24;
+            color: #1e40af;
+            border-color: #f59e0b;
+            box-shadow: 0 4px 12px rgba(251, 191, 36, 0.4);
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .checkbox {
+            width: 20px;
+            height: 20px;
+            accent-color: #fbbf24;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 18px;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.2rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, #fbbf24, #f59e0b);
+            color: #1e40af;
+            box-shadow: 0 6px 20px rgba(251, 191, 36, 0.4);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(251, 191, 36, 0.6);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-whatsapp {
+            background: #25d366;
+            color: white;
+            margin-top: 15px;
+        }
+
+        .btn-whatsapp:hover {
+            background: #128c7e;
+            transform: translateY(-3px);
+        }
+
+        .result-container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            margin-top: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .result-text {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 20px;
+            border-radius: 12px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            line-height: 1.6;
+            white-space: pre-wrap;
+            max-height: 400px;
+            overflow-y: auto;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .floating-icons {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .floating-icon {
+            position: absolute;
+            color: rgba(255, 255, 255, 0.1);
+            font-size: 2rem;
+            animation: float 6s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(180deg); }
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: auto;
+            padding: 20px 0;
+            opacity: 0.8;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .form-container {
+                padding: 20px;
+            }
+
+            .number-selector {
+                grid-template-columns: repeat(6, 1fr);
+            }
+        }
+    </style>
 </head>
-<body class="bg-gray-900 text-white min-h-screen p-4 flex flex-col items-center justify-center">
+<body>
+<div class="floating-icons">
+    <div class="floating-icon" style="top: 10%; left: 10%; animation-delay: 0s;">☪</div>
+    <div class="floating-icon" style="top: 20%; right: 15%; animation-delay: 1s;">📖</div>
+    <div class="floating-icon" style="top: 60%; left: 5%; animation-delay: 2s;">🤲</div>
+    <div class="floating-icon" style="bottom: 30%; right: 10%; animation-delay: 3s;">☪</div>
+    <div class="floating-icon" style="bottom: 10%; left: 20%; animation-delay: 4s;">📿</div>
+</div>
 
-<div class="w-full max-w-md space-y-4">
-    <h1 class="text-2xl font-bold text-center text-blue-400">📖 Генератор списка чтения Корана</h1>
+<div class="container">
+    <div class="header">
+        <h1>☪ Генератор списков чтения Корана</h1>
+        <p>Создание ротированных списков читателей с назначенными страницами</p>
+    </div>
 
-    <input type="text" id="userName" placeholder="Ваше имя" class="w-full p-2 rounded bg-gray-800 border border-gray-600 focus:outline-none" />
-    <input type="number" id="selectedNumber" placeholder="Номер ротации" min="1" class="w-full p-2 rounded bg-gray-800 border border-gray-600 focus:outline-none" />
+    <div class="form-container">
+        <form id="quranForm">
+            <div class="form-group">
+                <label for="userName">Введите ваше имя:</label>
+                <input type="text" id="userName" class="form-control" placeholder="Ваше имя" required>
+            </div>
 
-    <button onclick="generateReadingList()" class="w-full bg-blue-600 hover:bg-blue-700 p-2 rounded font-semibold">🔁 Сгенерировать список</button>
+            <div class="form-group">
+                <label>Выберите номер (1-30):</label>
+                <div class="number-selector" id="numberSelector">
+                    <!-- Numbers will be generated by JavaScript -->
+                </div>
+            </div>
 
-    <div id="resultContainer" class="hidden mt-4 space-y-2">
-        <textarea id="resultText" class="w-full h-64 p-2 rounded bg-gray-800 border border-gray-600" readonly></textarea>
+            <div class="form-group">
+                <div class="checkbox-group">
+                    <input type="checkbox" id="deleteOld" class="checkbox">
+                    <label for="deleteOld">Удалить предыдущий список</label>
+                </div>
+            </div>
 
-        <div class="flex justify-between gap-2">
-            <button onclick="sendToWhatsApp()" class="flex-1 bg-green-600 hover:bg-green-700 p-2 rounded font-semibold">📲 Отправить в WhatsApp</button>
-            <button onclick="downloadFile()" class="flex-1 bg-yellow-500 hover:bg-yellow-600 p-2 rounded font-semibold">💾 Скачать</button>
-        </div>
+            <button type="submit" class="btn btn-primary" id="generateBtn">
+                Создать список
+            </button>
+        </form>
+    </div>
+
+    <div class="result-container hidden" id="resultContainer">
+        <h3 style="margin-bottom: 20px; text-align: center;">📋 Сгенерированный список</h3>
+        <div class="result-text" id="resultText"></div>
+
+        <button type="button" class="btn btn-whatsapp" id="whatsappBtn">
+            📱 Отправить в WhatsApp
+        </button>
+
+        <button type="button" class="btn btn-primary" id="downloadBtn" style="margin-top: 15px;">
+            💾 Скачать файл
+        </button>
+    </div>
+
+    <div class="footer">
+        <p>© 2025 Генератор списков чтения Корана | PWA версия</p>
     </div>
 </div>
 
 <script>
-    const PAGE_RANGES = [
-        '1-10', '11-20', '21-30', '31-40', '41-50',
-        '51-60', '61-70', '71-80', '81-90', '91-100',
-        '101-110', '111-120', '121-130', '131-140', '141-150',
-        '151-160', '161-170', '171-180', '181-190', '191-200',
-        '201-210', '211-220', '221-230', '231-240', '241-250',
-        '251-260', '261-270', '271-280', '281-290', '291-300',
-        '301-310', '311-320', '321-330', '331-340', '341-350',
-        '351-360', '361-370', '371-380', '381-390', '391-400',
-        '401-410', '411-420', '421-430', '431-440', '441-450',
-        '451-460', '461-470', '471-480', '481-490', '491-500',
-        '501-510', '511-520', '521-530', '531-540', '541-550',
-        '551-560', '561-570', '571-580', '581-590', '591-604'
+    // Данные из Java кода
+    const READERS = [
+        "Юша1", "Ваха", "Заурбек Цоц", "Аслан Яхьяев", "Аслан Яхьяев1",
+        "Зубайр Курч", "Усман Цоц", "Усман Цоц1", "Вахийт",
+        "Хьамзат", "Аслан Атаги", "Висхьаж", "Дукх-Вах", "Дукх-Вах1",
+        "Заурбек Берд", "Адам", "Им-Али", "Муса", "Вах-Хьаж", "Минкаил",
+        "Юсуп Жалка", "Бувайсар", "Мяхьди", "Абу-Муслим", "Зураб",
+        "Муслим", "Усман Атаги", "Висхьаж М", "Рамзан", "Рахьим"
     ];
 
+    const PAGE_RANGES = [
+        "1-21", "22-41", "42-61", "62-81", "82-101", "102-121",
+        "122-141", "142-161", "162-181", "182-201", "202-221", "222-241",
+        "242-261", "262-281", "282-301", "302-321", "322-341", "342-361",
+        "362-381", "382-401", "402-421", "422-441", "442-461", "462-481",
+        "482-501", "502-521", "522-541", "542-561", "562-581", "582-604"
+    ];
+
+    let selectedNumber = null;
     let currentList = '';
 
-    function generateReadingList() {
-        const userName = document.getElementById('userName').value.trim();
-        const selectedNumber = parseInt(document.getElementById('selectedNumber').value.trim());
+    // Инициализация приложения
+    document.addEventListener('DOMContentLoaded', function() {
+        generateNumberSelector();
+        setupEventListeners();
+        registerServiceWorker();
+    });
 
-        if (!userName || isNaN(selectedNumber)) {
-            alert("Пожалуйста, введите имя и номер ротации.");
+    // Генерация селектора номеров
+    function generateNumberSelector() {
+        const container = document.getElementById('numberSelector');
+        for (let i = 1; i <= 30; i++) {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'number-btn';
+            btn.textContent = i;
+            btn.onclick = () => selectNumber(i, btn);
+            container.appendChild(btn);
+        }
+    }
+
+    // Выбор номера
+    function selectNumber(number, btn) {
+        // Снимаем выделение со всех кнопок
+        document.querySelectorAll('.number-btn').forEach(b => b.classList.remove('selected'));
+
+        // Выделяем выбранную кнопку
+        btn.classList.add('selected');
+        selectedNumber = number;
+    }
+
+    // Настройка обработчиков событий
+    function setupEventListeners() {
+        document.getElementById('quranForm').addEventListener('submit', handleFormSubmit);
+        document.getElementById('whatsappBtn').addEventListener('click', sendToWhatsApp);
+        document.getElementById('downloadBtn').addEventListener('click', downloadFile);
+    }
+
+    // Обработка отправки формы
+    function handleFormSubmit(e) {
+        e.preventDefault();
+
+        const userName = document.getElementById('userName').value.trim();
+
+        if (!userName) {
+            alert('Пожалуйста, введите ваше имя');
             return;
         }
 
-        const shiftedRanges = [...PAGE_RANGES.slice(selectedNumber - 1), ...PAGE_RANGES.slice(0, selectedNumber - 1)];
-        const header = createHeaderText(userName, selectedNumber);
-        const assignments = shiftedRanges.map((range, idx) => `${idx + 1}. ${range}`).join('\n');
-        currentList = header + assignments;
-        displayResult(currentList);
+        if (!selectedNumber) {
+            alert('Пожалуйста, выберите номер от 1 до 30');
+            return;
+        }
+
+        generateList(userName, selectedNumber);
     }
 
+    // Генерация списка
+    function generateList(userName, selectedNumber) {
+        const btn = document.getElementById('generateBtn');
+        btn.innerHTML = '<span class="loading"></span> Создание...';
+        btn.disabled = true;
+
+        setTimeout(() => {
+            try {
+                // Ротация списка читателей
+                const rotatedReaders = rotateReadersList(selectedNumber);
+
+                // Создание списка с номерами
+                const readersList = rotatedReaders.map((reader, index) => `${reader} ${index + 1}`);
+
+                // Создание полного сообщения
+                const fullMessage = createFullMessage(readersList, userName, selectedNumber);
+
+                // Отображение результата
+                displayResult(fullMessage);
+
+            } catch (error) {
+                alert('Ошибка при создании списка: ' + error.message);
+            } finally {
+                btn.innerHTML = 'Создать список';
+                btn.disabled = false;
+            }
+        }, 1000);
+    }
+
+    // Ротация списка читателей
+    function rotateReadersList(selectedNumber) {
+        const rotatedList = [...READERS];
+
+        // Поворачиваем список влево на (selectedNumber - 1) позиций
+        for (let i = 0; i < selectedNumber - 1; i++) {
+            const first = rotatedList.shift();
+            rotatedList.push(first);
+        }
+
+        return rotatedList;
+    }
+
+    // Создание полного сообщения
+    function createFullMessage(readersList, userName, selectedNumber) {
+        let message = '';
+
+        // Добавляем список читателей
+        readersList.forEach(reader => {
+            message += reader + '\n';
+        });
+
+        // Добавляем заголовок
+        message += createHeaderText(userName, selectedNumber);
+
+        // Добавляем диапазоны страниц
+        message += createPageRangesText();
+
+        currentList = message;
+        return message;
+    }
+
+    // Создание заголовочного текста
     function createHeaderText(userName, selectedNumber) {
         const currentDateTime = new Date().toLocaleString('ru-RU', {
-            year: 'numeric', month: '2-digit', day: '2-digit',
-            hour: '2-digit', minute: '2-digit'
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit'
         });
-        return `📌 Ответственный: ${userName}\n📆 Дата: ${currentDateTime}\n🔄 Номер ротации: ${selectedNumber}\n\n📖 Назначение страниц:\n`;
+
+        const nextNumber = selectedNumber === 30 ? 1 : selectedNumber + 1;
+
+        return `----------------------------------------
+${userName} т1ера
+Дела дуьхьа Къуръан хатм йа
+Ният дукх вай ИншаАллах1!!!
+Выбран №${selectedNumber}. Следующий день №${nextNumber},
+Список составлен: ${currentDateTime}
+Новый список будет через 3 дня!!!
+
+`;
     }
 
+    // Создание текста с диапазонами страниц
+    function createPageRangesText() {
+        let text = '';
+        PAGE_RANGES.forEach((range, index) => {
+            text += `${String(index + 1).padStart(2, '0')}: ${range} ::\n`;
+        });
+        return text;
+    }
+
+    // Отображение результата
     function displayResult(message) {
-        document.getElementById('resultContainer').classList.remove('hidden');
         document.getElementById('resultText').textContent = message;
+        document.getElementById('resultContainer').classList.remove('hidden');
+
+        // Прокрутка к результату
+        document.getElementById('resultContainer').scrollIntoView({
+            behavior: 'smooth',
+            block: 'start'
+        });
     }
 
+    // Отправка в WhatsApp
     function sendToWhatsApp() {
-        const encodedMessage = encodeURIComponent(currentList);
-        const whatsappUrl = `https://wa.me/?text=${encodedMessage}`;
+        if (!currentList) {
+            alert('Сначала создайте список');
+            return;
+        }
+
+        const phoneNumber = prompt('Введите номер телефона (в формате +1234567890) или оставьте пустым для общей отправки:');
+
+        let whatsappUrl;
+        if (phoneNumber && phoneNumber.trim()) {
+            const cleanPhone = phoneNumber.replace(/[^0-9+]/g, '').replace('+', '');
+            whatsappUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(currentList)}`;
+        } else {
+            whatsappUrl = `https://web.whatsapp.com/send?text=${encodeURIComponent(currentList)}`;
+        }
+
         window.open(whatsappUrl, '_blank');
     }
 
+    // Скачивание файла
     function downloadFile() {
+        if (!currentList) {
+            alert('Сначала создайте список');
+            return;
+        }
+
         const blob = new Blob([currentList], { type: 'text/plain;charset=utf-8' });
         const url = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = `Список_чтения_${new Date().toISOString().split('T')[0]}.txt`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `quran_list_${new Date().toISOString().split('T')[0]}.txt`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
         URL.revokeObjectURL(url);
     }
 
-    if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-            navigator.serviceWorker.register('/service-worker.js')
-                .then(() => console.log("✅ Service Worker зарегистрирован"))
-                .catch(e => console.error("❌ Ошибка SW:", e));
-        });
+    // Регистрация Service Worker для PWA
+    function registerServiceWorker() {
+        if ('serviceWorker' in navigator) {
+            const swCode = `
+                const CACHE_NAME = 'quran-reading-v1';
+                const urlsToCache = ['/'];
+
+                self.addEventListener('install', function(event) {
+                    event.waitUntil(
+                        caches.open(CACHE_NAME)
+                            .then(function(cache) {
+                                return cache.addAll(urlsToCache);
+                            })
+                    );
+                });
+
+                self.addEventListener('fetch', function(event) {
+                    event.respondWith(
+                        caches.match(event.request)
+                            .then(function(response) {
+                                if (response) {
+                                    return response;
+                                }
+                                return fetch(event.request);
+                            })
+                    );
+                });
+            `;
+
+            const blob = new Blob([swCode], { type: 'application/javascript' });
+            const swUrl = URL.createObjectURL(blob);
+
+            navigator.serviceWorker.register(swUrl)
+                .then(function(registration) {
+                    console.log('Service Worker registered successfully');
+                })
+                .catch(function(error) {
+                    console.log('Service Worker registration failed');
+                });
+        }
     }
+
+    // Обработка установки PWA
+    let deferredPrompt;
+    window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+
+        // Можно показать кнопку установки
+        console.log('PWA can be installed');
+    });
 </script>
 </body>
 </html>
